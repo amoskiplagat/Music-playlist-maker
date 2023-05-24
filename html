@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Music Playlist Maker</title>
+  <style>
+    body {
+      background-color: #111;
+      color: #fff;
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+    
+    h1 {
+      padding: 20px;
+      font-size: 36px;
+    }
+    
+    #playlist {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .song {
+      margin: 15px 0;
+      padding: 15px 20px;
+      background-color: #333;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .song:hover {
+      background-color: #555;
+    }
+    
+    .active {
+      background-color: #f00;
+    }
+    
+    .input-group {
+      margin-bottom: 10px;
+    }
+    
+    .input-group input {
+      width: 400px;
+      padding: 5px;
+      font-size: 16px;
+    }
+    
+    .input-group button {
+      padding: 5px 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    
+    .player {
+      margin-top: 20px;
+    }
+    
+    .player audio,
+    .player video {
+      margin-bottom: 10px;
+    }
+    
+    .delete-btn {
+      margin-left: 10px;
+      font-size: 12px;
+      color: #999;
+      cursor: pointer;
+    }
+    
+    .download-link {
+      margin-left: 10px;
+      font-size: 12px;
+      color: #999;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>Music Playlist Maker</h1>
+  
+  <div class="input-group">
+    <input type="text" id="musicName" placeholder="Enter video name">
+    <input type="text" id="musicLink" placeholder="Enter music/video link">
+    <button onclick="saveSong()">Save</button>
+  </div>
+  
+  <ul id="playlist">
+  </ul>
+  
+  <div class="player">
+    <audio id="audioPlayer" controls></audio>
+    <video id="videoPlayer" controls></video>
+  </div>
+
+  <script>
+    var playlist = document.getElementById("playlist");
+    var audioPlayer = document.getElementById("audioPlayer");
+    var videoPlayer = document.getElementById("videoPlayer");
+    var currentSong = null;
+    
+    // Load previously saved songs from local storage
+    window.addEventListener("DOMContentLoaded", function() {
+      var savedSongs = localStorage.getItem("musicPlaylist");
+      if (savedSongs) {
+        playlist.innerHTML = savedSongs;
+        initializeSongs();
+      }
+    });
+    
+    function initializeSongs() {
+      var songs = playlist.getElementsByClassName("song");
+      for (var i = 0; i < songs.length; i++) {
+        songs[i].addEventListener("click", playSong);
+        
+        var deleteBtn = document.createElement("span");
+        deleteBtn.className = "delete-btn";
+        deleteBtn.textContent = "Delete";
+        deleteBtn.addEventListener("click", deleteSong);
+        
+        var downloadLink = document.createElement("a");
+        downloadLink.className = "download-link";
+        downloadLink.textContent = "Download";
+        downloadLink.addEventListener("click", downloadSong);
+        
+        songs[i].appendChild(deleteBtn);
+        songs[i].appendChild(downloadLink);
+      }
+    }
+    
+    function playSong() {
+      if (currentSong) {
+        currentSong.classList.remove("active");
+      }
+      this.classList.add("active");
+      currentSong = this;
+      
+      var url = this.dataset.url;
+      var isAudio = url.endsWith(".mp3") || url.endsWith(".ogg") || url.endsWith(".wav");
+      
+      if (isAudio) {
+        audioPlayer.style.display = "block";
+        videoPlayer.style.display = "none";
+        audioPlayer.src = url;
+        audioPlayer.play();
+      } else {
+        audioPlayer.style.display = "none";
+        videoPlayer.style.display = "block";
+        videoPlayer.src = url;
+        videoPlayer.play();
+      }
+    }
+    
+    function saveSong() {
+      var musicNameInput = document.getElementById("musicName");
+      var musicLinkInput = document.getElementById("musicLink");
+      var musicName = musicNameInput.value;
+      var musicLink = musicLinkInput.value;
+      
+      if (musicName && musicLink) {
+        var song = document.createElement("li");
+        song.className = "song";
+        song.textContent = musicName;
+        song.dataset.url = musicLink;
+        
+        var deleteBtn = document.createElement("span");
+        deleteBtn.className = "delete-btn";
+        deleteBtn.textContent = "Delete";
+        deleteBtn.addEventListener("click", deleteSong);
+        
+        var downloadLink = document.createElement("a");
+        downloadLink.className = "download-link";
+        downloadLink.textContent = "Download";
+        downloadLink.addEventListener("click", downloadSong);
+        
+        song.appendChild(deleteBtn);
+        song.appendChild(downloadLink);
+        
+        playlist.appendChild(song);
+        musicNameInput.value = "";
+        musicLinkInput.value = "";
+        
+        saveToLocalStorage();
+        
+        song.addEventListener("click", playSong);
+      }
+    }
+    
+    function deleteSong() {
+      var song = this.parentNode;
+      if (song.classList.contains("active")) {
+        audioPlayer.pause();
+        videoPlayer.pause();
+        audioPlayer.currentTime = 0;
+        videoPlayer.currentTime = 0;
+        currentSong = null;
+      }
+      playlist.removeChild(song);
+      saveToLocalStorage();
+    }
+    
+    function downloadSong() {
+      var song = this.parentNode;
+      var url = song.dataset.url;
+      var isAudio = url.endsWith(".mp3") || url.endsWith(".ogg") || url.endsWith(".wav");
+      
+      var link = document.createElement("a");
+      link.href = url;
+      link.download = isAudio ? "audio.mp3" : "video.mp4";
+      link.click();
+    }
+    
+    function saveToLocalStorage() {
+      localStorage.setItem("musicPlaylist", playlist.innerHTML);
+    }
+  </script>
+</body>
+
+  
+  <div class="input-group">
+    <!-- Rest of the code... -->
+  </div>
+  
+  <ul id="playlist">
+    <!-- Rest of the code... -->
+  </ul>
+  
+  <div class="player">
+    <!-- Rest of the code... -->
+  </div>
+  
+  <footer>
+    &copy; 2023 Music Playlist Maker by Amos Kiplang'at. All rights reserved.
+  </footer>
+
+  <script>
+    // Rest of the code...
+  </script>
+</body>
+</html>
+</html>
